@@ -585,7 +585,7 @@ def hybrid_recommend(
             "director":     director_name,
             "cast":         cast,
             "score_content": round(float(c_scores[i]), 4),
-            "score_collab":  round(float(cf_scores[i]), 4),
+            "score_collab":  cf_scores[i],
             "score_hybrid":  round(float(hybrid[i]), 4),
             "trailer_key": trailer_key,
         })
