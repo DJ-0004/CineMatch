@@ -471,7 +471,21 @@ def svd_scores(ratings_df: pd.DataFrame, movie_ids_query: list[int]) -> np.ndarr
     mat_c[non_zero] -= row_means[np.where(non_zero)[0]]
 
     k = min(15, min(mat_c.shape) - 1)
-    U, sigma, Vt = svds(csr_matrix(mat_c), k=k)
+    # Convert to a sparse matrix first
+    sparse_mat_c = csr_matrix(mat_c)
+
+    # Find the smallest dimension of your matrix
+    min_dim = min(sparse_mat_c.shape)
+
+    # Calculate a safe 'k' that obeys the mathematical rule
+    safe_k = min(k, min_dim - 1)
+
+    # Handle the extreme edge case (if the matrix is too small)
+    if safe_k <= 0:
+        return {} # Return an empty dict/list depending on what your app expects
+
+    # Run the algorithm safely
+    U, sigma, Vt = svds(sparse_mat_c, k=safe_k)
     # Item latent vectors → L2 norm as quality proxy
     item_latent = (Vt.T * sigma)       # shape: (n_movies, k)
     raw = np.linalg.norm(item_latent, axis=1)
