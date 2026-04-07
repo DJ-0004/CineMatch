@@ -573,7 +573,7 @@ def hybrid_recommend(
             "overview":     m.get("overview", ""),
             "poster_path":  m.get("poster_path"),
             "genres":       genres,
-            "director":     director,
+            "director":     movie_director,
             "cast":         cast,
             "score_content": round(float(c_scores[i]), 4),
             "score_collab":  round(float(cf_scores[i]), 4),
