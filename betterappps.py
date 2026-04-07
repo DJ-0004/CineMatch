@@ -8,7 +8,18 @@ from scipy.sparse.linalg import svds
 from scipy.sparse import csr_matrix
 import random
 import time
-
+def get_director(movie_id):
+    try:
+        credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key={st.secrets['TMDB_KEY']}"
+        creds = requests.get(credits_url).json()
+        
+        if 'crew' in creds:
+            for member in creds['crew']:
+                if member['job'] == 'Director':
+                    return member['name']
+    except Exception:
+        pass
+    return "Unknown"
 # ─────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────
@@ -551,12 +562,10 @@ def hybrid_recommend(
     # ── 4. Build result DataFrame ─────────────────────────────────
     records = []
     for i, m in enumerate(movies):
+        m_id = m["id"]
         genres = [GENRE_MAP.get(gid["id"], gid["name"]) for gid in m.get("genres", [])]
         credits = m.get("credits", {}) or {}
-        director = next(
-            (c["name"] for c in credits.get("crew", []) if c.get("job") == "Director"),
-            "—",
-        )
+        director_name = get_director(m_id)
         cast = [c["name"] for c in credits.get("cast", [])[:3]]
         trailer_key = None
         videos = m.get("videos", {}).get("results", [])
@@ -573,7 +582,7 @@ def hybrid_recommend(
             "overview":     m.get("overview", ""),
             "poster_path":  m.get("poster_path"),
             "genres":       genres,
-            "director":     director,
+            "director":     director_name,
             "cast":         cast,
             "score_content": round(float(c_scores[i]), 4),
             "score_collab":  round(float(cf_scores[i]), 4),
