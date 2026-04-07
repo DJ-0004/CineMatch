@@ -540,11 +540,14 @@ def hybrid_recommend(
 
     # ── 2. Collaborative scores ────────────────────────────────────
     ratings_df = build_synthetic_ratings(movies)
-    cf_scores  = svd_scores(ratings_df, [m["id"] for m in movies])
+    cf_scores = svd_scores(ratings_df, [m["id"] for m in movies])
 
-    # ── 3. Hybrid blend ───────────────────────────────────────────
-    hybrid = w_content * c_scores + w_collab * cf_scores
+        # If Collaborative Filtering failed, use a list of zeros so the math works
+        if not cf_scores or isinstance(cf_scores, dict):
+            cf_scores = np.zeros(len(c_scores))
 
+        # — 3. Hybrid blend —
+        hybrid = w_content * c_scores + w_collab * cf_scores
     # ── 4. Build result DataFrame ─────────────────────────────────
     records = []
     for i, m in enumerate(movies):
